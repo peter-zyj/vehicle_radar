@@ -1,0 +1,87 @@
+
+
+const int HornPin = 2;
+const int TrigPin = 8; 
+const int EchoPin = 9; 
+boolean Htag = false;
+boolean Ltag = false;
+float cm; 
+void setup() 
+{ 
+  Serial.begin(9600); 
+  pinMode(TrigPin, OUTPUT); 
+  pinMode(EchoPin, INPUT); 
+  pinMode(4,OUTPUT);
+} 
+void loop() 
+{ 
+  digitalWrite(HornPin, LOW); 
+  digitalWrite(TrigPin, LOW); //低高低电平发一个短时间脉冲去TrigPin 
+  delayMicroseconds(2); 
+  digitalWrite(TrigPin, HIGH); 
+  delayMicroseconds(10); 
+  digitalWrite(TrigPin, LOW); 
+
+  cm = pulseIn(EchoPin, HIGH) / 58.0; //将回波时间换算成cm 
+//  if(cm > 30){                   the horn has the min output duration which is bigger than 500ms
+//    digitalWrite(HornPin, HIGH); 
+//    delay(2000);
+//    digitalWrite(HornPin, LOW); 
+//  } else if(10 < cm <= 30){
+//      digitalWrite(HornPin, HIGH); 
+//    delay(1000);
+//    digitalWrite(HornPin, LOW); 
+//  } else {
+//    digitalWrite(HornPin, HIGH); 
+//    delay(100);
+//    digitalWrite(HornPin, LOW); 
+//  }
+  if(cm < 20){     //45 100
+    digitalWrite(HornPin, HIGH); //Warning:: less than 10cm 
+    Serial.println("high");
+
+    if(!Htag){
+    for(int i=200;i<=800;i++)                    //用循环的方式将频率从200HZ 增加到800HZ
+    {
+      
+      tone(4,i);                            //在四号端口输出频率
+      delay(5);                              //该频率维持5毫秒   
+    }
+    delay(2000);
+    Htag = true;
+   }
+  } 
+    
+
+  if(cm >= 20 && cm < 60){   //45
+    digitalWrite(HornPin, HIGH); //Warning:: less than 10cm 
+    Serial.println("middle");
+    if(Htag){
+    for(int i=800;i>=200;i--)
+    {
+     tone(4,i);
+     delay(10);
+    }
+    delay(2000);
+    Htag = false;
+    }else {
+
+     tone(4,200);
+//     delay(10);
+     delay(2000);
+      
+    }
+  } 
+  
+  if(cm >= 60){
+    Serial.println("over");
+    noTone(4);
+    Htag = false;
+  }
+  
+  Serial.print(cm); 
+  Serial.print("cm"); 
+  Serial.println(); 
+  Serial.println(Htag);
+  delay(1000); 
+} 
